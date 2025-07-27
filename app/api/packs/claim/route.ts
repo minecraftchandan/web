@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
     }
 
-    const packName = 'Daily Pack'
+    const packName = 'daily pack'
     const packsToAdd = 1
 
     // Check if user already has this pack type
