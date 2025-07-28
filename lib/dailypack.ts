@@ -1,7 +1,10 @@
+// Define the cooldown duration in milliseconds
+const DAILY_COOLDOWN_MS = 10 * 1000 // 10 seconds
+
 export async function handleDailyPackClaim(userId: string) {
   // Immediately set as claimed for better UX
   setDailyPackClaimed(userId)
-  
+
   // Return success immediately for instant UI response
   const immediateResponse = {
     success: true,
@@ -9,7 +12,7 @@ export async function handleDailyPackClaim(userId: string) {
     cards: ['Card 1', 'Card 2', 'Card 3'],
     quantity: 1,
   }
-  
+
   // Make API call in background without blocking UI
   fetch('/api/packs/claim', {
     method: 'POST',
@@ -21,7 +24,7 @@ export async function handleDailyPackClaim(userId: string) {
     // Silently revert if API fails
     localStorage.removeItem(`dailypack_${userId}_lastClaim`)
   })
-  
+
   return immediateResponse
 }
 
@@ -35,20 +38,20 @@ export function canClaimDailyPack(userId: string): { canClaim: boolean; timeUnti
 
   const lastClaim = new Date(lastClaimStr)
   const now = new Date()
-  const timeDiff = now.getTime() - lastClaim.getTime()
-  const hoursDiff = timeDiff / (1000 * 3600)
+  const timeDiff = now.getTime() - lastClaim.getTime() // Difference in milliseconds
 
-  if (hoursDiff >= 24) {
+  if (timeDiff >= DAILY_COOLDOWN_MS) {
     return { canClaim: true }
   }
 
-  const hoursLeft = 24 - hoursDiff
-  const hours = Math.floor(hoursLeft)
-  const minutes = Math.floor((hoursLeft - hours) * 60)
+  const timeLeftMs = DAILY_COOLDOWN_MS - timeDiff
+  const seconds = Math.ceil(timeLeftMs / 1000) // Round up to ensure full seconds are displayed
 
+  // For a 10-second cooldown, displaying only seconds is sufficient.
+  // If you want minutes/hours for longer cooldowns, you'd adjust this formatting.
   return {
     canClaim: false,
-    timeUntilNext: `${hours}h ${minutes}m`,
+    timeUntilNext: `${seconds}s`,
   }
 }
 
